@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Results - Video Analyzer Starter{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <h2 class="mb-4">Analysis Results</h2>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Video Details</h5>
+                <table class="table table-bordered mb-0">
+                    <tr>
+                        <th style="width: 35%">Source URL</th>
+                        <td><a href="{{ video_url }}" target="_blank">{{ video_url }}</a></td>
+                    </tr>
+                    <tr>
+                        <th>Human Detections</th>
+                        <td><span class="badge bg-success fs-6">{{ human_count }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Processing Time</th>
+                        <td>{{ processing_time }} seconds</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Annotated Video</h5>
+                {% if output_file %}
+                <video controls class="w-100 rounded">
+                    <source src="/output/{{ output_filename }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                {% else %}
+                <p class="text-muted">No output video available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <a href="/" class="btn btn-outline-secondary">Analyze Another Video</a>
+    </div>
+</div>
+{% endblock %}

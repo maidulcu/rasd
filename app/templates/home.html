@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Video Analyzer Starter{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 text-center">
+        <h1 class="mb-4">Video Analyzer Starter</h1>
+        <p class="lead text-muted mb-4">
+            Enter a video URL to detect and count humans using YOLO object detection.
+        </p>
+
+        <form method="post" action="/analyze" class="mt-4">
+            <div class="input-group input-group-lg">
+                <input
+                    type="url"
+                    name="video_url"
+                    class="form-control"
+                    placeholder="https://example.com/video.mp4"
+                    required
+                >
+                <button type="submit" class="btn btn-primary px-4">Analyze</button>
+            </div>
+            <small class="text-muted mt-2 d-block">
+                Supports direct MP4 URLs over HTTP and HTTPS
+            </small>
+        </form>
+    </div>
+</div>
+{% endblock %}
