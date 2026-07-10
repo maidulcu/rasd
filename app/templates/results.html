@@ -20,6 +20,18 @@
                         <td><span class="badge bg-success fs-6">{{ human_count }}</span></td>
                     </tr>
                     <tr>
+                        <th>Faces Detected</th>
+                        <td><span class="badge bg-info fs-6">{{ face_count }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Unattended Objects</th>
+                        <td><span class="badge bg-warning fs-6">{{ unattended_count }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Theft (Concealed Items)</th>
+                        <td><span class="badge bg-danger fs-6">{{ theft_alerts }}</span></td>
+                    </tr>
+                    <tr>
                         <th>Processing Time</th>
                         <td>{{ processing_time }} seconds</td>
                     </tr>

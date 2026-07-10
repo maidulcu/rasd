@@ -80,14 +80,22 @@ async def analyze(
         job.processing_time = result["processing_time"]
         job.status = "completed"
 
-        summary = DetectionSummary(job_id=job.id, human_count=result["human_count"])
+        summary = DetectionSummary(
+            job_id=job.id,
+            human_count=result["human_count"],
+            face_count=result.get("face_count", 0),
+            unattended_count=result.get("unattended_count", 0),
+            theft_alert_count=result.get("theft_alerts", 0),
+        )
         db.add(summary)
 
         video.status = "completed"
         db.commit()
 
         logger.info(
-            "Job %d completed: %d humans detected", job.id, result["human_count"]
+            "Job %d completed: %d humans, %d faces, %d unattended, %d theft alerts",
+            job.id, result["human_count"], result.get("face_count", 0),
+            result.get("unattended_count", 0), result.get("theft_alerts", 0),
         )
 
         return RedirectResponse(url=f"/results/{job.id}", status_code=303)
@@ -144,6 +152,9 @@ def results(request: Request, job_id: int):
                 "processing_time": job.processing_time or 0,
                 "output_file": output_file,
                 "output_filename": output_filename,
+                "face_count": summary.face_count if summary else 0,
+                "unattended_count": summary.unattended_count if summary else 0,
+                "theft_alerts": summary.theft_alert_count if summary else 0,
             },
         )
     finally:

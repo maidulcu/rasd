@@ -46,5 +46,8 @@ class DetectionSummary(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     job_id: Mapped[int] = mapped_column(Integer, ForeignKey("analysis_jobs.id"))
     human_count: Mapped[int] = mapped_column(Integer, default=0)
+    face_count: Mapped[int] = mapped_column(Integer, default=0)
+    unattended_count: Mapped[int] = mapped_column(Integer, default=0)
+    theft_alert_count: Mapped[int] = mapped_column(Integer, default=0)
 
     job: Mapped["AnalysisJob"] = relationship(back_populates="summary")
