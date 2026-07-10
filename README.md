@@ -1,6 +1,6 @@
 # Video Analyzer Starter
 
-Person detection for video files using YOLO and FastAPI.
+Person detection for video files using YOLO on CPU.
 
 ## Prerequisites
 
@@ -49,6 +49,17 @@ uvicorn app.main:app --reload
 2. Click **Analyze**
 3. View results: annotated video with bounding boxes, human detection count, and processing time
 
+## Performance Optimizations
+
+Optimized for CPU-only inference on older hardware:
+
+| Variable      | Default | Description                        |
+|---------------|---------|------------------------------------|
+| `FRAME_SKIP`  | `2`     | Process every Nth frame (1 = all)  |
+| `MAX_WIDTH`   | `1280`  | Downscale frames wider than this   |
+
+Set via `.env` file.
+
 ## API Endpoints
 
 | Method | Path            | Description                |
@@ -65,10 +76,10 @@ app/
   api/routes.py          - FastAPI endpoints
   core/config.py         - Pydantic settings
   core/database.py       - SQLAlchemy engine/session
-  detectors/yolo_detector.py  - YOLO person detection
+  detectors/yolo_detector.py  - YOLO person detection (CPU only)
   storage/models.py      - SQLAlchemy models
   video/downloader.py    - Video download service
-  video/video_processor.py - Video processing pipeline
+  video/video_processor.py - Video processing pipeline (with frame skip + resize)
   templates/             - Jinja2 HTML templates
   main.py                - Application entry point
 alembic/                 - Database migrations

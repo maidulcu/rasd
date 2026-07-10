@@ -25,52 +25,68 @@ class VideoProcessor:
             raise RuntimeError(f"Cannot open video file: {video_path}")
 
         fps = cap.get(cv2.CAP_PROP_FPS) or 30.0
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        orig_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        orig_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
+        scale = min(settings.MAX_WIDTH / orig_width, 1.0)
+        out_width = int(orig_width * scale)
+        out_height = int(orig_height * scale)
+
         logger.info(
-            "Video info: %dx%d @ %.1f fps, %d frames", width, height, fps, total_frames
+            "Video info: %dx%d @ %.1f fps, %d frames (output: %dx%d, skip: %d)",
+            orig_width, orig_height, fps, total_frames, out_width, out_height, settings.FRAME_SKIP,
         )
 
         output_filename = f"annotated_{os.path.basename(video_path)}"
         output_path = os.path.join(settings.OUTPUT_DIR, output_filename)
 
-        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        writer = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+        fourcc = cv2.VideoWriter_fourcc(*"avc1")
+        writer = cv2.VideoWriter(output_path, fourcc, fps, (out_width, out_height))
 
-        human_count = 0
         frame_idx = 0
+        seen_ids = set()
+        max_concurrent = 0
 
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
 
-            detections = self.detector.detect_frame(frame)
+            if scale < 1.0:
+                frame = cv2.resize(frame, (out_width, out_height), interpolation=cv2.INTER_AREA)
 
-            for det in detections:
+            if frame_idx % (settings.FRAME_SKIP + 1) == 0:
+                tracked = self.detector.track_frame(frame)
+            else:
+                tracked = self.detector.detect_frame(frame)
+                for t in tracked:
+                    t["track_id"] = None
+
+            active_ids = set()
+            colors = [
+                (0, 255, 0), (255, 0, 0), (0, 0, 255), (255, 255, 0),
+                (255, 0, 255), (0, 255, 255), (128, 0, 128), (0, 128, 128),
+            ]
+
+            for det in tracked:
                 x1, y1, x2, y2 = det["bbox"]
-                conf = det["confidence"]
-                label = det["label"]
+                tid = det.get("track_id")
+                if tid is not None:
+                    active_ids.add(tid)
+                    seen_ids.add(tid)
 
-                cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-
-                text = f"{label} {conf:.2f}"
-                (tw, th), _ = cv2.getTextSize(text, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
-                cv2.rectangle(frame, (x1, y1 - th - 10), (x1 + tw, y1), (0, 255, 0), -1)
+                color = colors[(tid or 0) % len(colors)]
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                label = f"Person #{tid}" if tid is not None else f"Person {det['confidence']:.2f}"
+                (tw, th), _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 1)
+                cv2.rectangle(frame, (x1, y1 - th - 10), (x1 + tw, y1), color, -1)
                 cv2.putText(
-                    frame,
-                    text,
-                    (x1, y1 - 5),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6,
-                    (0, 0, 0),
-                    1,
-                    cv2.LINE_AA,
+                    frame, label, (x1, y1 - 5),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1, cv2.LINE_AA,
                 )
 
-            human_count += len(detections)
+            max_concurrent = max(max_concurrent, len(active_ids))
             writer.write(frame)
             frame_idx += 1
 
@@ -80,15 +96,16 @@ class VideoProcessor:
         cap.release()
         writer.release()
 
+        unique_people = len(seen_ids)
         processing_time = round(time.time() - start_time, 2)
         logger.info(
-            "Analysis completed: %d human detections in %.2f seconds",
-            human_count,
-            processing_time,
+            "Analysis completed: %d unique people (max %d concurrent) in %.2f seconds",
+            unique_people, max_concurrent, processing_time,
         )
 
         return {
             "output_file": output_path,
             "processing_time": processing_time,
-            "human_count": human_count,
+            "human_count": unique_people,
+            "max_concurrent": max_concurrent,
         }

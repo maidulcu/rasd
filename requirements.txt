@@ -9,4 +9,3 @@ requests
 jinja2
 python-multipart
 pydantic-settings
-numpy

@@ -24,12 +24,14 @@ processor = VideoProcessor()
 
 @router.get("/")
 def home(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+    return templates.TemplateResponse(request, "home.html")
 
 
 @router.post("/analyze")
 def analyze(request: Request, video_url: str = Form(...)):
     db = SessionLocal()
+    video = None
+    job = None
     try:
         video = Video(source_url=video_url, status="uploaded")
         db.add(video)
@@ -71,16 +73,17 @@ def analyze(request: Request, video_url: str = Form(...)):
 
     except Exception as e:
         logger.error("Analysis failed: %s", e)
-        if "video" in dir():
+        if video is not None:
             video.status = "failed"
             db.commit()
-        if "job" in dir() and job.id:
+        if job is not None:
             job.status = "failed"
             job.completed_at = datetime.now(timezone.utc)
             db.commit()
         return templates.TemplateResponse(
+            request,
             "home.html",
-            {"request": request, "error": str(e)},
+            context={"error": str(e)},
             status_code=400,
         )
     finally:
@@ -94,8 +97,9 @@ def results(request: Request, job_id: int):
         job = db.query(AnalysisJob).filter(AnalysisJob.id == job_id).first()
         if not job:
             return templates.TemplateResponse(
+                request,
                 "home.html",
-                {"request": request, "error": "Job not found"},
+                context={"error": "Job not found"},
                 status_code=404,
             )
 
@@ -111,9 +115,9 @@ def results(request: Request, job_id: int):
                 output_file = output_path
 
         return templates.TemplateResponse(
+            request,
             "results.html",
-            {
-                "request": request,
+            context={
                 "video_url": video.source_url if video else "",
                 "human_count": summary.human_count if summary else 0,
                 "processing_time": job.processing_time or 0,

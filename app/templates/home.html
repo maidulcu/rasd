@@ -10,6 +10,12 @@
             Enter a video URL to detect and count humans using YOLO object detection.
         </p>
 
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            <strong>Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
         <form method="post" action="/analyze" class="mt-4">
             <div class="input-group input-group-lg">
                 <input
