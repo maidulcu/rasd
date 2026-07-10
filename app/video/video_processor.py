@@ -70,7 +70,6 @@ class VideoProcessor:
 
             if frame_idx % (settings.FRAME_SKIP + 1) == 0:
                 tracked = self.detector.track_frame(frame)
-                all_detections = self.detector.detect_frame(frame)
                 faces = self.face_detector.detect(frame)
                 pose_persons = self.pose_detector.detect(frame)
 
@@ -80,7 +79,8 @@ class VideoProcessor:
                     if d.get("class_id") == 0:
                         person_boxes.append(d["bbox"])
                         person_ids.append(d.get("track_id"))
-                theft.update(all_detections, person_boxes, person_ids)
+                # track_frame already returns all COCO classes; reuse for theft
+                theft.update(tracked, person_boxes, person_ids)
 
                 for p in pose_persons:
                     for bh in p.get("behaviors", []):
@@ -103,7 +103,6 @@ class VideoProcessor:
                 for t in tracked:
                     t["track_id"] = None
                 faces = []
-                all_detections = []
                 pose_persons = []
 
             active_ids = set()
