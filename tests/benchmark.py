@@ -105,10 +105,6 @@ def benchmark():
             timers["track_frame"].append((time.perf_counter() - t0) * 1000)
 
             t0 = time.perf_counter()
-            all_dets = yolo.detect_frame(frame)
-            timers["detect_frame"].append((time.perf_counter() - t0) * 1000)
-
-            t0 = time.perf_counter()
             faces = face.detect(frame)
             timers["face_detect"].append((time.perf_counter() - t0) * 1000)
 
@@ -120,7 +116,8 @@ def benchmark():
             person_ids = [d.get("track_id") for d in tracked if d.get("class_id") == 0]
 
             t0 = time.perf_counter()
-            theft.update(all_dets, person_boxes, person_ids)
+            # track_frame already returns all COCO classes; reuse for theft
+            theft.update(tracked, person_boxes, person_ids)
             timers["theft_update"].append((time.perf_counter() - t0) * 1000)
         else:
             t0 = time.perf_counter()
@@ -129,7 +126,6 @@ def benchmark():
                 t["track_id"] = None
             timers["track_frame"].append((time.perf_counter() - t0) * 1000)
             faces = []
-            all_dets = []
             pose_persons = []
 
         # Drawing
