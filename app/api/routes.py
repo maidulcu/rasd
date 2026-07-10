@@ -86,6 +86,8 @@ async def analyze(
             face_count=result.get("face_count", 0),
             unattended_count=result.get("unattended_count", 0),
             theft_alert_count=result.get("theft_alerts", 0),
+            hand_to_pocket_count=result.get("hand_to_pocket_count", 0),
+            bending_count=result.get("bending_count", 0),
         )
         db.add(summary)
 
@@ -155,6 +157,8 @@ def results(request: Request, job_id: int):
                 "face_count": summary.face_count if summary else 0,
                 "unattended_count": summary.unattended_count if summary else 0,
                 "theft_alerts": summary.theft_alert_count if summary else 0,
+                "hand_to_pocket_count": summary.hand_to_pocket_count if summary else 0,
+                "bending_count": summary.bending_count if summary else 0,
             },
         )
     finally:

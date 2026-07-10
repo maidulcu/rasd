@@ -49,5 +49,7 @@ class DetectionSummary(Base):
     face_count: Mapped[int] = mapped_column(Integer, default=0)
     unattended_count: Mapped[int] = mapped_column(Integer, default=0)
     theft_alert_count: Mapped[int] = mapped_column(Integer, default=0)
+    hand_to_pocket_count: Mapped[int] = mapped_column(Integer, default=0)
+    bending_count: Mapped[int] = mapped_column(Integer, default=0)
 
     job: Mapped["AnalysisJob"] = relationship(back_populates="summary")

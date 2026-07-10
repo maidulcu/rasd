@@ -25,4 +25,4 @@ def test_results_page_not_found(client):
 
 def test_analyze_missing_url(client):
     response = client.post("/analyze", data={})
-    assert response.status_code == 422
+    assert response.status_code == 400

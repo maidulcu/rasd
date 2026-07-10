@@ -6,6 +6,7 @@ import cv2
 
 from app.core.config import settings
 from app.detectors.face_detector import FaceDetector
+from app.detectors.pose_detector import PoseDetector
 from app.detectors.theft_detector import TheftDetector
 from app.detectors.yolo_detector import YOLODetector
 
@@ -19,6 +20,8 @@ class VideoProcessor:
         self.detector.load_model()
         self.face_detector = FaceDetector()
         self.face_detector.load_model()
+        self.pose_detector = PoseDetector()
+        self.pose_detector.load_model()
 
     def process(self, video_path: str) -> dict:
         logger.info("Analysis started for: %s", video_path)
@@ -53,6 +56,9 @@ class VideoProcessor:
         seen_ids = set()
         max_concurrent = 0
         total_faces = 0
+        pose_alerts = []
+        hand_to_pocket_count = 0
+        bending_count = 0
 
         while True:
             ret, frame = cap.read()
@@ -66,6 +72,7 @@ class VideoProcessor:
                 tracked = self.detector.track_frame(frame)
                 all_detections = self.detector.detect_frame(frame)
                 faces = self.face_detector.detect(frame)
+                pose_persons = self.pose_detector.detect(frame)
 
                 person_boxes = []
                 person_ids = []
@@ -74,12 +81,30 @@ class VideoProcessor:
                         person_boxes.append(d["bbox"])
                         person_ids.append(d.get("track_id"))
                 theft.update(all_detections, person_boxes, person_ids)
+
+                for p in pose_persons:
+                    for bh in p.get("behaviors", []):
+                        if bh["type"] == "hand_to_pocket":
+                            hand_to_pocket_count += 1
+                            pose_alerts.append({
+                                "type": "hand_to_pocket",
+                                "frame": frame_idx,
+                                "label": bh["label"],
+                            })
+                        elif bh["type"] == "bending":
+                            bending_count += 1
+                            pose_alerts.append({
+                                "type": "bending",
+                                "frame": frame_idx,
+                                "label": bh["label"],
+                            })
             else:
                 tracked = self.detector.detect_frame(frame)
                 for t in tracked:
                     t["track_id"] = None
                 faces = []
                 all_detections = []
+                pose_persons = []
 
             active_ids = set()
             colors = [
@@ -115,6 +140,8 @@ class VideoProcessor:
                     cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 0), 1, cv2.LINE_AA,
                 )
                 total_faces += 1
+
+            self.pose_detector.draw_skeleton(frame, pose_persons)
 
             for interaction in theft.current_interactions:
                 x1, y1, x2, y2 = interaction["bbox"]
@@ -167,4 +194,6 @@ class VideoProcessor:
             "face_count": total_faces,
             "unattended_count": len(theft_results["unattended_objects"]),
             "theft_alerts": len(theft_results["theft_alerts"]),
+            "hand_to_pocket_count": hand_to_pocket_count,
+            "bending_count": bending_count,
         }
