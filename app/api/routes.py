@@ -1,9 +1,9 @@
 import logging
 import os
-import time
+import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Form, Request
+from fastapi import APIRouter, File, Form, Request, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
@@ -28,21 +28,42 @@ def home(request: Request):
 
 
 @router.post("/analyze")
-def analyze(request: Request, video_url: str = Form(...)):
+async def analyze(
+    request: Request,
+    video_file: UploadFile = File(None),
+    video_url: str = Form(None),
+):
     db = SessionLocal()
     video = None
     job = None
     try:
-        video = Video(source_url=video_url, status="uploaded")
+        if video_file and video_file.filename:
+            ext = os.path.splitext(video_file.filename)[1] or ".mp4"
+            filename = f"{uuid.uuid4().hex}{ext}"
+            local_path = os.path.join(settings.DOWNLOAD_DIR, filename)
+            os.makedirs(settings.DOWNLOAD_DIR, exist_ok=True)
+
+            content = await video_file.read()
+            with open(local_path, "wb") as f:
+                f.write(content)
+
+            if os.path.getsize(local_path) == 0:
+                raise RuntimeError("Uploaded file is empty")
+
+            source_url = f"(uploaded) {video_file.filename}"
+            logger.info("Upload saved: %s (%d bytes)", local_path, os.path.getsize(local_path))
+
+        elif video_url:
+            local_path = downloader.download(video_url)
+            source_url = video_url
+
+        else:
+            raise ValueError("Provide a video URL or upload a file")
+
+        video = Video(source_url=source_url, local_path=local_path, status="processing")
         db.add(video)
         db.commit()
         db.refresh(video)
-
-        local_path = downloader.download(video_url)
-
-        video.local_path = local_path
-        video.status = "processing"
-        db.commit()
 
         job = AnalysisJob(
             video_id=video.id,

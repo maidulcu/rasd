@@ -7,7 +7,7 @@
     <div class="col-md-8 text-center">
         <h1 class="mb-4">Video Analyzer Starter</h1>
         <p class="lead text-muted mb-4">
-            Enter a video URL to detect and count humans using YOLO object detection.
+            Upload a video or paste a URL to detect and count humans using YOLO.
         </p>
 
         {% if error %}
@@ -16,19 +16,29 @@
         </div>
         {% endif %}
 
-        <form method="post" action="/analyze" class="mt-4">
-            <div class="input-group input-group-lg">
+        <form method="post" action="/analyze" enctype="multipart/form-data" class="mt-4">
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Upload a video file</label>
+                <input
+                    type="file"
+                    name="video_file"
+                    class="form-control form-control-lg"
+                    accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska"
+                >
+            </div>
+            <div class="text-muted mb-2">— or —</div>
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Paste a video URL</label>
                 <input
                     type="url"
                     name="video_url"
-                    class="form-control"
+                    class="form-control form-control-lg"
                     placeholder="https://example.com/video.mp4"
-                    required
                 >
-                <button type="submit" class="btn btn-primary px-4">Analyze</button>
             </div>
+            <button type="submit" class="btn btn-primary btn-lg px-5">Analyze</button>
             <small class="text-muted mt-2 d-block">
-                Supports direct MP4 URLs over HTTP and HTTPS
+                Supports MP4, MOV, AVI, MKV. Max 500 MB.
             </small>
         </form>
     </div>
