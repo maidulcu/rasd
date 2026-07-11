@@ -75,15 +75,23 @@ Video Write  ▏                                                     <1%
 
 ### ✅ Face Detection 2× Downscale
 - **Before**: 707ms — Haar cascade scanning full 1280×720
-- **After**: 210ms — downsamples to max 640px wide before cascade
-- **Speedup**: 3.4×
+- **After**: 201ms — downsamples to max 640px wide before cascade
+- **Speedup**: **3.5×** (biggest single win)
 - **Tradeoff**: Minor accuracy loss on very small faces (<20px in downscaled frame). No impact on typical surveillance (faces are 80–200px).
 
 ### ✅ Removed Redundant YOLO Detection Call
-- **Before**: `track_frame()` (376ms) + separate `detect_frame()` (191ms) = 567ms per tracked frame
-- **After**: `track_frame()` already returns all 80 COCO classes; `detect_frame` call removed.
-- **Speedup**: 191ms saved per tracked frame (no accuracy impact)
-- **Note**: Tracked frames use `conf=0.3`, skip frames use `conf=0.5` (default). This slightly increases false positives on tracked frames but improves theft detection recall.
+- **Before**: `track_frame()` + separate `detect_frame()` = 376ms inference per tracked frame
+- **After**: `track_frame()` already returns all 80 COCO classes; `detect_frame` removed.
+- **Speedup**: −191ms (no accuracy impact)
+
+### ✅ ONNX Runtime for YOLO Models
+- Converted `yolov8n.pt → yolov8n.onnx` and `yolov8n-pose.pt → yolov8n-pose.onnx`
+- Config flag `USE_ONNX=true` in `.env` enables ONNX mode
+- **Speedup**: ~5% on Track Frame (179ms vs 188ms) — marginal for yolov8n because:
+  - YOLOv8n is already tiny (6.2MB); PyTorch overhead is small
+  - ByteTrack + preprocessing/postprocessing dominates total time
+  - ONNX benefit grows with larger models (yolov8s, yolov8m)
+- **Still worth it for**: faster model load (0.02s vs 0.18s), consistent deployment, edge device compatibility
 
 ---
 
@@ -91,26 +99,24 @@ Video Write  ▏                                                     <1%
 
 | Optimization | Est. Speedup | Effort | Risk | Details |
 |---|---|---|---|---|
-| **ONNX export** | 2–3× on YOLO | Medium | Low | Convert `yolov8n.pt → yolov8n.onnx` (2–3× CPU inference speedup) |
 | **Pose every 2nd tracked frame** | −8% total | Trivial | Low | Pose detection on every other tracked frame instead of every frame |
 | **Face every 3rd tracked frame** | −7% total | Trivial | Low | Face detection on 1/3 of tracked frames (still get representative count) |
 | **FRAME_SKIP=4** | −33% tracked frames | Trivial | Medium | Every 5th frame instead of every 3rd. Misses short interactions. |
 | **MAX_WIDTH=640** | −25% on all CV ops | Trivial | Low | Smaller frames = faster resize, detect, draw. Lower quality output. |
+| **YOLOv8s ONNX** | −50% pose + detection | Low (with ONNX) | Low | Switch to `yolov8s.onnx` for better accuracy at same speed as yolov8n PyTorch |
 | **Multi-processing** | N/A (single video) | High | High | Only helps with multiple concurrent cameras |
 | **TensorRT** | 5–10× on GPU | High | High | Requires NVIDIA GPU, model conversion, deployment complexity |
-| **Batch inference** | Minimal | High | High | Video is sequential; no benefit without multiple cameras |
 
 ### Estimated with All Low-Effort Optimizations
 
 | Component | Current (ms) | Optimized (ms) | Notes |
 |---|---|---|---|
-| Track Frame | 188 | 63–94 | ONNX export (2–3×) |
-| Face Detect | 210 | 70 | ONNX not helpful (Haar, not YOLO) |
-| Pose Detect | 115 | 0–58 | Every 2nd frame; 58ms if ONNX |
+| Track Frame | 179 | 179 | Bottleneck is ByteTrack + preprocessing, not inference |
+| Face Detect | 201 | 70 | Every 3rd frame instead of every frame |
+| Pose Detect | 108 | 54 | Every 2nd frame instead of every frame |
 | Drawing | 5 | 5 | Unchanged |
-| **Tracked frame total** | **519ms (1.9 fps)** | **168ms (6.0 fps)** | **3.2× improvement** |
-| **Skip frame total** | **188ms (5.3 fps)** | **63ms (15.9 fps)** | **3× improvement** |
-| **Pipeline total (341 frames)** | **107s** | **~35s** | **3× faster** |
+| **Tracked frame total** | **493ms** | **308ms** | **1.6× improvement** |
+| **Pipeline total (341 frames)** | **102s** | **~70s** | **1.5× faster** |
 
 ---
 
@@ -199,10 +205,10 @@ CPU thermal throttling and system load are normal.
 | Date | Version | Pipeline Time | Effective fps | Real-time factor | Change |
 |---|---|---|---|---|---|
 | 2026-07-10 | Pre-opt | 183.6s | 0.6 | 16.15× | Baseline |
-| 2026-07-10 | +Face 2× downscale | 127.5s | 0.9 | 11.21× | Face 3.4× faster |
+| 2026-07-10 | +Face 2× downscale | 127.5s | 0.9 | 11.21× | Face 3.5× faster |
 | 2026-07-10 | +Remove redundant detect | 107.1s | 1.1 | 9.42× | −191ms/tracked frame |
-| Next | +ONNX export | ~35s* | ~3.3 | ~3× | 3× YOLO speedup |
-| Next | +Pose every 2nd frame | ~101s* | ~1.2 | ~8.9× | −12% pipeline time |
-| Next | +FRAME_SKIP=4 | ~64s* | ~1.8 | ~5.6× | −40% tracked frames |
+| 2026-07-10 | +ONNX export | 101.6s | 1.1 | 8.94× | ~5% Track Frame; faster model load |
+| Next | +Pose every 2nd frame | ~96s* | ~1.2 | ~8.4× | −5% pipeline time |
+| Next | +FRAME_SKIP=4 | ~63s* | ~1.8 | ~5.5× | −38% tracked frames |
 
 *Estimated — not yet implemented.

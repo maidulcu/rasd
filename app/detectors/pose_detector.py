@@ -36,8 +36,10 @@ class PoseDetector:
         self.model = None
 
     def load_model(self):
-        logger.info("Loading YOLOv8-pose model: yolov8n-pose.pt")
-        self.model = YOLO("yolov8n-pose.pt")
+        path = settings.pose_model_path
+        logger.info("Loading YOLOv8-pose model: %s", path)
+        kwargs = {"task": "pose"} if path.endswith(".onnx") else {}
+        self.model = YOLO(path, **kwargs)
         logger.info("YOLOv8-pose model loaded successfully")
 
     def detect(self, frame):

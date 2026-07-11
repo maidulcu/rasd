@@ -87,6 +87,8 @@ MAX_WIDTH=1280
 | `DOWNLOAD_DIR` | `downloads` | Where downloaded/uploaded videos are stored |
 | `OUTPUT_DIR` | `output` | Where annotated output videos are saved |
 | `YOLO_MODEL` | `yolov8n.pt` | YOLO model for detection (auto-downloads if missing) |
+| `POSE_MODEL` | `yolov8n-pose.pt` | Pose estimation model |
+| `USE_ONNX` | `false` | Use ONNX Runtime (set `true` for ~5% faster inference) |
 | `CONFIDENCE_THRESHOLD` | `0.5` | Minimum confidence for detections |
 | `FRAME_SKIP` | `2` | Process every (N+1)th frame (2 = every 3rd frame) |
 | `MAX_WIDTH` | `1280` | Scale videos wider than this down to this width |

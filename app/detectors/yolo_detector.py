@@ -15,8 +15,10 @@ class YOLODetector:
         self.model = None
 
     def load_model(self):
-        logger.info("Loading YOLO model: %s", settings.YOLO_MODEL)
-        self.model = YOLO(settings.YOLO_MODEL)
+        path = settings.detection_model_path
+        logger.info("Loading YOLO model: %s", path)
+        kwargs = {"task": "detect"} if path.endswith(".onnx") else {}
+        self.model = YOLO(path, **kwargs)
         logger.info("YOLO model loaded successfully")
 
     def detect_frame(self, frame):
