@@ -3,10 +3,13 @@
 Fine-tune YOLOv8 on a custom UAE retail dataset.
 
 Usage:
-  python training/train.py                     # Full training
-  python training/train.py --epochs 50         # Custom epochs
-  python training/train.py --resume            # Resume from checkpoint
-  python training/train.py --export-only       # Just export to ONNX
+  python training/train.py                                    # Auto-detect device, 100 epochs
+  python training/train.py --epochs 50 --batch 16             # Custom
+  python training/train.py --device mps                       # Force Apple GPU
+  python training/train.py --device cuda                      # Force NVIDIA GPU
+  python training/train.py --name dallah                      # Name the run
+  python training/train.py --resume                           # Resume from checkpoint
+  python training/train.py --export-only                      # Just export to ONNX
 """
 
 import argparse, os, sys, shutil
@@ -14,7 +17,6 @@ from pathlib import Path
 
 os.environ["YOLO_VERBOSE"] = "False"
 
-# Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from ultralytics import YOLO
@@ -25,40 +27,63 @@ DEFAULT_IMGSZ = 640
 DEFAULT_LR = 0.001
 
 
-def get_dataset_yaml() -> str:
-    """Return path to dataset config."""
+def detect_device():
+    """Auto-detect best available device."""
+    import torch
+    if torch.cuda.is_available():
+        return "cuda"
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+
+def get_dataset_yaml(classes=None) -> str:
+    """Return path to dataset config. Optionally filter to specific classes."""
     cfg = Path(__file__).parent / "config.yaml"
     if not cfg.exists():
-        # Generate dataset first
         print("Dataset not found. Generating synthetic dataset...")
         from training.generate_data import generate_split, write_dataset_yaml, \
-            IMG_DIR, LAB_DIR, N_TRAIN, N_VAL
+            IMG_DIR, LAB_DIR
         os.makedirs(IMG_DIR, exist_ok=True)
         os.makedirs(LAB_DIR, exist_ok=True)
-        print("  Generating training set...")
-        generate_split(N_TRAIN, 0)
-        print("  Generating validation set...")
-        generate_split(N_VAL, N_TRAIN)
-        write_dataset_yaml()
+
+        n_train = 500
+        n_val = 100
+
+        if classes:
+            print(f"  Generating for classes: {classes}")
+            from training.generate_data import generate_class_split
+            generate_class_split(classes, n_train, 0)
+            generate_class_split(classes, n_val, n_train)
+        else:
+            print("  Generating full training set...")
+            from training.generate_data import generate_split as gs, N_TRAIN, N_VAL
+            gs(N_TRAIN, 0)
+            print("  Generating full validation set...")
+            gs(N_VAL, N_TRAIN)
+
+        write_dataset_yaml(classes=classes)
     return str(cfg)
 
 
 def train(args):
     """Fine-tune YOLOv8n on custom dataset."""
-    dataset_yaml = get_dataset_yaml()
+    device = args.device or detect_device()
+    dataset_yaml = get_dataset_yaml(classes=args.classes)
 
-    # Load pretrained model
-    print(f"Loading pretrained YOLOv8n...")
     model = YOLO(args.model if args.model else "yolov8n.pt")
 
     print(f"\n{'='*60}")
-    print(f"Starting fine-tuning on custom UAE retail dataset")
-    print(f"  Dataset: {dataset_yaml}")
-    print(f"  Epochs:  {args.epochs}")
-    print(f"  Batch:   {args.batch}")
-    print(f"  ImgSz:   {args.imgsz}")
-    print(f"  LR:      {args.lr}")
-    print(f"  Resume:  {args.resume}")
+    print(f"Fine-tuning YOLOv8n")
+    print(f"  Dataset:  {dataset_yaml}")
+    print(f"  Device:   {device}")
+    print(f"  Epochs:   {args.epochs}")
+    print(f"  Batch:    {args.batch}")
+    print(f"  ImgSz:    {args.imgsz}")
+    print(f"  LR:       {args.lr}")
+    print(f"  Resume:   {args.resume}")
+    if args.classes:
+        print(f"  Classes:  {', '.join(args.classes)}")
     print(f"{'='*60}\n")
 
     results = model.train(
@@ -67,7 +92,7 @@ def train(args):
         batch=args.batch,
         imgsz=args.imgsz,
         lr0=args.lr,
-        device="cpu",
+        device=device,
         patience=20,
         seed=42,
         deterministic=True,
@@ -87,21 +112,21 @@ def train(args):
         mixup=0.1,
         copy_paste=0.1,
         project="training/runs",
-        name="uae_retail",
+        name=args.name,
         exist_ok=True,
         resume=args.resume,
-        verbose=False,
+        verbose=True,
     )
 
-    print(f"\nTraining complete! Results saved to training/runs/uae_retail")
+    print(f"\nTraining complete! Results saved to training/runs/{args.name}")
     return results
 
 
 def export_model(args):
     """Export trained model to ONNX and copy to project root."""
-    # Find best model
-    best_pt = Path("training/runs/uae_retail/weights/best.pt")
-    last_pt = Path("training/runs/uae_retail/weights/last.pt")
+    run_dir = Path("training/runs") / args.name
+    best_pt = run_dir / "weights" / "best.pt"
+    last_pt = run_dir / "weights" / "last.pt"
 
     model_path = best_pt if best_pt.exists() else last_pt
     if not model_path.exists():
@@ -112,73 +137,36 @@ def export_model(args):
     print(f"Loading trained model: {model_path}")
     model = YOLO(str(model_path))
 
-    # Export to ONNX
     print("Exporting to ONNX...")
     onnx_path = model.export(format="onnx", imgsz=args.imgsz)
     print(f"  ONNX model: {onnx_path}")
 
-    # Also export the model with a UAE-specific name
-    dst = Path("uae_retail_n.pt")
+    dst = Path(f"{args.name}.pt")
     shutil.copy(str(model_path), str(dst))
     print(f"  Copied to: {dst}")
 
-    dst_onnx = Path("uae_retail_n.onnx")
+    dst_onnx = Path(f"{args.name}.onnx")
     if Path(onnx_path).exists():
         shutil.copy(str(onnx_path), str(dst_onnx))
         print(f"  Copied to: {dst_onnx}")
 
-    # Test inference
-    print("\nTesting inference with fine-tuned model...")
-    import cv2, numpy as np, time
-    from training.generate_data import make_background, ITEM_MAKERS, composite
-
-    # Create a test scene
-    bg = make_background(640, 640)
-    test_img = bg.copy()
-    item_img = ITEM_MAKERS[0]()  # dallah
-    test_img, _ = composite(item_img, test_img, max_instances=2)
-    item_img2 = ITEM_MAKERS[1]()  # perfume
-    test_img, _ = composite(item_img2, test_img, max_instances=1)
-
-    # Test with PyTorch
-    t0 = time.perf_counter()
-    r = model(test_img, verbose=False)[0]
-    pt_time = (time.perf_counter() - t0) * 1000
-    print(f"  PyTorch inference: {pt_time:.1f}ms, {len(r.boxes)} detections")
-
-    # Test with ONNX if available
-    if Path(onnx_path).exists():
-        model_onnx = YOLO(str(onnx_path), task="detect")
-        t0 = time.perf_counter()
-        r = model_onnx(test_img, verbose=False)[0]
-        onnx_time = (time.perf_counter() - t0) * 1000
-        print(f"  ONNX inference:   {onnx_time:.1f}ms, {len(r.boxes)} detections")
-
     print(f"\nFine-tuned model ready: {dst}")
-
-    # Show sample detections
-    if len(r.boxes) > 0:
-        print(f"\nSample detections:")
-        for i, box in enumerate(r.boxes[:5]):
-            cls_id = int(box.cls[0])
-            conf = box.conf[0]
-            print(f"  {i+1}. {CLASSES[cls_id] if cls_id < len(CLASSES) else '?'} ({conf:.2f})")
-
     return model
 
 
-CLASSES = ["dallah", "perfume_bottle", "gold_box",
-           "electronics", "dates_box", "wallet", "watch"]
-
-
 def main():
-    parser = argparse.ArgumentParser(description="Fine-tune YOLOv8 on UAE retail dataset")
+    parser = argparse.ArgumentParser(description="Fine-tune YOLOv8 on custom dataset")
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS)
     parser.add_argument("--batch", type=int, default=DEFAULT_BATCH)
     parser.add_argument("--imgsz", type=int, default=DEFAULT_IMGSZ)
     parser.add_argument("--lr", type=float, default=DEFAULT_LR)
-    parser.add_argument("--model", type=str, default="yolov8n.pt",
-                        help="Pretrained model path")
+    parser.add_argument("--model", type=str, default="yolov8n.pt")
+    parser.add_argument("--device", type=str, default=None,
+                        help="Force device: cpu, cuda, mps")
+    parser.add_argument("--name", type=str, default="uae_retail",
+                        help="Run name (used for output directory)")
+    parser.add_argument("--classes", type=str, nargs="+", default=None,
+                        help="Train on specific classes only (e.g. --classes dallah)")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--export-only", action="store_true")
     args = parser.parse_args()
