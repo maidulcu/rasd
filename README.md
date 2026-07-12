@@ -212,8 +212,6 @@ MIT License — see [LICENSE](LICENSE).
 
 - **[Maidul Islam](https://github.com/maidulcu)** — Lead Developer
 - **[Dynamic Web Lab](https://github.com/Dynamic-Web-Lab)** — Organization & Enterprise Support
-- **[Dev](https://github.com/maidul-devops)** — Infrastructure & DevOps
-- **[Sakib](https://github.com/7sakib)** — Testing & QA
 
 ---
 
