@@ -14,11 +14,9 @@
                 <span class="version">v1.0 · Open Source</span>
             </div>
             <nav>
-                <a href="#" class="nav-item active">📊 Dashboard</a>
-                <a href="#" class="nav-item" onclick="showUpgrade()">🗺️ Zones</a>
-                <a href="#" class="nav-item" onclick="showUpgrade()">👤 Faces</a>
-                <a href="#" class="nav-item" onclick="showUpgrade()">📈 Analytics</a>
-                <a href="#" class="nav-item" onclick="showUpgrade()">⚠️ Alerts</a>
+                <a href="/" class="nav-item">🏠 Home</a>
+                <a href="/dashboard" class="nav-item active">📊 Dashboard</a>
+                <a href="https://rasdai.com" target="_blank" class="nav-item">🔓 Get Pro</a>
             </nav>
             <div class="sidebar-footer">
                 <a href="https://github.com/maidulcu/rasd" target="_blank" class="github-link">⭐ GitHub</a>
@@ -29,8 +27,7 @@
             <header class="header">
                 <h2>Dashboard</h2>
                 <div class="header-actions">
-                    <span class="status" id="connection-status">● Disconnected</span>
-                    <button class="btn btn-primary" onclick="openAddCamera()">+ Add Camera</button>
+                    <span class="status online">● Basic Mode</span>
                 </div>
             </header>
 
@@ -38,7 +35,7 @@
                 <div class="stat-card">
                     <div class="stat-icon">📹</div>
                     <div class="stat-info">
-                        <span class="stat-value" id="cameras-online">0/0</span>
+                        <span class="stat-value">0/0</span>
                         <span class="stat-label">Cameras</span>
                     </div>
                 </div>
@@ -67,18 +64,33 @@
 
             <section class="section">
                 <div class="section-header">
-                    <h3>Live Cameras</h3>
+                    <h3>Analyze Video</h3>
                 </div>
-                <div class="camera-grid" id="camera-grid">
+                <div class="upload-card">
+                    <form id="upload-form" enctype="multipart/form-data">
+                        <div class="upload-row">
+                            <div class="upload-field">
+                                <label>Upload video file</label>
+                                <input type="file" name="video_file" accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska">
+                            </div>
+                            <div class="upload-or">— or —</div>
+                            <div class="upload-field">
+                                <label>Paste video URL</label>
+                                <input type="url" name="video_url" placeholder="https://example.com/video.mp4">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Analyze</button>
+                        </div>
+                        <small class="text-muted">MP4, MOV, AVI, MKV. Max 500 MB.</small>
+                    </form>
                 </div>
             </section>
 
             <section class="section">
                 <div class="section-header">
-                    <h3>Detection Log</h3>
+                    <h3>Recent Analysis</h3>
                 </div>
-                <div class="alerts-feed" id="detection-log">
-                    <div class="no-alerts">No detections yet</div>
+                <div class="alerts-feed" id="recent-analysis">
+                    <div class="no-alerts">No analysis yet. <a href="/">Upload a video</a></div>
                 </div>
             </section>
 
@@ -87,6 +99,11 @@
                     <h3>🔓 Unlock More with Rasd Pro</h3>
                 </div>
                 <div class="pro-grid">
+                    <div class="pro-card">
+                        <span class="pro-icon">📹</span>
+                        <h4>Live Camera Feed</h4>
+                        <p>Connect RTSP, USB, or IP cameras for real-time monitoring</p>
+                    </div>
                     <div class="pro-card">
                         <span class="pro-icon">🛒</span>
                         <h4>Queue Analytics</h4>
@@ -122,65 +139,12 @@
                         <h4>Face Recognition</h4>
                         <p>Whitelist/blacklist & VIP detection</p>
                     </div>
-                    <div class="pro-card">
-                        <span class="pro-icon">🧠</span>
-                        <h4>Custom Models</h4>
-                        <p>UAE retail, theft, queue — purpose-built AI</p>
-                    </div>
                 </div>
                 <div class="pro-cta">
                     <a href="https://rasdai.com" target="_blank" class="btn btn-primary btn-lg">Get Rasd Pro →</a>
                 </div>
             </section>
         </main>
-    </div>
-
-    <!-- Add Camera Modal -->
-    <div class="modal" id="add-camera-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add Camera</h3>
-                <button class="close" onclick="closeModal('add-camera-modal')">&times;</button>
-            </div>
-            <form id="add-camera-form">
-                <div class="form-group">
-                    <label>Camera Name</label>
-                    <input type="text" id="camera-name" placeholder="e.g., Front Entrance" required>
-                </div>
-                <div class="form-group">
-                    <label>Source</label>
-                    <select id="camera-source">
-                        <option value="rtsp">RTSP Stream</option>
-                        <option value="file">Video File</option>
-                        <option value="usb">USB Camera</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>URL / Path</label>
-                    <input type="text" id="camera-url" placeholder="rtsp://user:pass@192.168.1.100:554/stream" required>
-                </div>
-                <div class="form-group">
-                    <label>Location</label>
-                    <input type="text" id="camera-location" placeholder="e.g., Building A">
-                </div>
-                <button type="submit" class="btn btn-primary btn-full">Add Camera</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Upgrade Modal -->
-    <div class="modal" id="upgrade-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>🔓 Pro Feature</h3>
-                <button class="close" onclick="closeModal('upgrade-modal')">&times;</button>
-            </div>
-            <div class="upgrade-body">
-                <p>This feature is available in <strong>Rasd Pro</strong>.</p>
-                <p>Get queue analytics, dwell time, multi-camera, alerts, and custom AI models.</p>
-                <a href="https://rasdai.com" target="_blank" class="btn btn-primary btn-full">Learn More →</a>
-            </div>
-        </div>
     </div>
 
     <script src="/static/js/dashboard.js"></script>
