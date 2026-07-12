@@ -166,13 +166,7 @@ python training/train.py --export onnx
 
 ## Edge Deployment
 
-Optimized for low-power edge devices:
-
-| Device | FPS | Power | Use Case |
-|--------|-----|-------|----------|
-| Orange Pi 5 | 8-12 | 5W | Retail stores |
-| Jetson Orin Nano | 15-25 | 15W | Smart cities |
-| Mac Mini M3 | 20-30 | 6W | Development |
+Rasd is optimized for edge deployment. Export to ONNX and run on low-power devices for real-time processing without cloud dependency.
 
 ---
 
