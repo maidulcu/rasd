@@ -5,6 +5,7 @@ alembic
 psycopg2-binary
 opencv-python
 ultralytics
+supervision
 requests
 jinja2
 python-multipart
