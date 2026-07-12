@@ -43,30 +43,6 @@
                         <th>Processing Time</th>
                         <td>{{ processing_time }} seconds</td>
                     </tr>
-                    <tr>
-                        <th>Entry Zone</th>
-                        <td><span class="badge bg-success fs-6">{{ zone_stats.get("entry_zone_count", 0) }}</span> people</td>
-                    </tr>
-                    <tr>
-                        <th>Exit Zone</th>
-                        <td><span class="badge bg-danger fs-6">{{ zone_stats.get("exit_zone_count", 0) }}</span> people</td>
-                    </tr>
-                    <tr>
-                        <th>Shelf Zone</th>
-                        <td><span class="badge bg-warning fs-6">{{ zone_stats.get("shelf_zone_count", 0) }}</span> people</td>
-                    </tr>
-                    <tr>
-                        <th>Line Crossings (In)</th>
-                        <td><span class="badge bg-info fs-6">{{ zone_stats.get("entry_line_count", 0) }}</span></td>
-                    </tr>
-                    <tr>
-                        <th>Line Crossings (Out)</th>
-                        <td><span class="badge bg-info fs-6">{{ zone_stats.get("exit_line_count", 0) }}</span></td>
-                    </tr>
-                    <tr>
-                        <th>Avg Dwell Time</th>
-                        <td><span class="badge bg-primary fs-6">{{ zone_stats.get("avg_dwell_seconds", 0) }}</span> seconds</td>
-                    </tr>
                 </table>
             </div>
         </div>
@@ -79,6 +55,7 @@
                     <source src="/output/{{ output_filename }}" type="video/mp4">
                     Your browser does not support the video tag.
                 </video>
+                <small class="text-muted">Video includes zone overlays (entry/exit/shelf), detection boxes, and heatmap.</small>
                 {% else %}
                 <p class="text-muted">No output video available.</p>
                 {% endif %}
