@@ -154,9 +154,7 @@ rasd/
 │   ├── templates/                 # Jinja2 HTML templates
 │   └── main.py                    # App entry point
 ├── training/
-│   ├── train.py                   # Fine-tuning pipeline
-│   ├── generate_data.py           # Synthetic data generation
-│   └── config.yaml                # Training configuration
+│   └── train.py                   # Fine-tuning pipeline
 ├── requirements.txt
 └── .env.example
 ```
@@ -168,8 +166,8 @@ rasd/
 Fine-tune for your use case:
 
 ```bash
-python training/train.py --epochs 50 --img-size 640
-python training/train.py --export onnx
+python training/train.py --epochs 50 --imgsz 640
+python training/train.py --export-only
 ```
 
 ---
