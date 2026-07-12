@@ -18,9 +18,23 @@ os.makedirs(settings.OUTPUT_DIR, exist_ok=True)
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="Video Analyzer Starter")
+app = FastAPI(title="Rasd — AI Video Analytics")
 
 app.include_router(router)
+
+
+from fastapi import Request
+from fastapi.templating import Jinja2Templates
+
+dashboard_templates = Jinja2Templates(directory="app/dashboard/templates")
+
+
+@app.get("/dashboard")
+def dashboard(request: Request):
+    return dashboard_templates.TemplateResponse(request, "dashboard.html")
+
+
+app.mount("/static", StaticFiles(directory="app/dashboard/static"), name="static")
 
 app.mount(
     "/output",

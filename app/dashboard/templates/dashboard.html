@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rasd — AI Video Analytics</title>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard">
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>🔍 Rasd</h1>
+                <span class="version">v1.0 · Open Source</span>
+            </div>
+            <nav>
+                <a href="#" class="nav-item active">📊 Dashboard</a>
+                <a href="#" class="nav-item" onclick="showUpgrade()">🗺️ Zones</a>
+                <a href="#" class="nav-item" onclick="showUpgrade()">👤 Faces</a>
+                <a href="#" class="nav-item" onclick="showUpgrade()">📈 Analytics</a>
+                <a href="#" class="nav-item" onclick="showUpgrade()">⚠️ Alerts</a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="https://github.com/maidulcu/rasd" target="_blank" class="github-link">⭐ GitHub</a>
+            </div>
+        </aside>
+
+        <main class="main">
+            <header class="header">
+                <h2>Dashboard</h2>
+                <div class="header-actions">
+                    <span class="status" id="connection-status">● Disconnected</span>
+                    <button class="btn btn-primary" onclick="openAddCamera()">+ Add Camera</button>
+                </div>
+            </header>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📹</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="cameras-online">0/0</span>
+                        <span class="stat-label">Cameras</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="people-detected">0</span>
+                        <span class="stat-label">People Detected</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="objects-count">0</span>
+                        <span class="stat-label">Objects</span>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-info">
+                        <span class="stat-value" id="fps-display">0</span>
+                        <span class="stat-label">FPS</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="section">
+                <div class="section-header">
+                    <h3>Live Cameras</h3>
+                </div>
+                <div class="camera-grid" id="camera-grid">
+                </div>
+            </section>
+
+            <section class="section">
+                <div class="section-header">
+                    <h3>Detection Log</h3>
+                </div>
+                <div class="alerts-feed" id="detection-log">
+                    <div class="no-alerts">No detections yet</div>
+                </div>
+            </section>
+
+            <section class="pro-features">
+                <div class="pro-header">
+                    <h3>🔓 Unlock More with Rasd Pro</h3>
+                </div>
+                <div class="pro-grid">
+                    <div class="pro-card">
+                        <span class="pro-icon">🛒</span>
+                        <h4>Queue Analytics</h4>
+                        <p>Real-time queue length & wait time monitoring</p>
+                    </div>
+                    <div class="pro-card">
+                        <span class="pro-icon">⏱️</span>
+                        <h4>Dwell Time</h4>
+                        <p>Track customer browsing & engagement patterns</p>
+                    </div>
+                    <div class="pro-card">
+                        <span class="pro-icon">🚶</span>
+                        <h4>Customer Flow</h4>
+                        <p>Entry/exit counting & traffic heatmaps</p>
+                    </div>
+                    <div class="pro-card">
+                        <span class="pro-icon">📹</span>
+                        <h4>Multi-Camera</h4>
+                        <p>Manage unlimited cameras from one dashboard</p>
+                    </div>
+                    <div class="pro-card">
+                        <span class="pro-icon">⚠️</span>
+                        <h4>Smart Alerts</h4>
+                        <p>Theft, zone intrusion, Telegram & email alerts</p>
+                    </div>
+                    <div class="pro-card">
+                        <span class="pro-icon">🗺️</span>
+                        <h4>Zone Management</h4>
+                        <p>Define restricted areas & monitor occupancy</p>
+                    </div>
+                    <div class="pro-card">
+                        <span class="pro-icon">👤</span>
+                        <h4>Face Recognition</h4>
+                        <p>Whitelist/blacklist & VIP detection</p>
+                    </div>
+                    <div class="pro-card">
+                        <span class="pro-icon">🧠</span>
+                        <h4>Custom Models</h4>
+                        <p>UAE retail, theft, queue — purpose-built AI</p>
+                    </div>
+                </div>
+                <div class="pro-cta">
+                    <a href="https://rasdai.com" target="_blank" class="btn btn-primary btn-lg">Get Rasd Pro →</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Camera Modal -->
+    <div class="modal" id="add-camera-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Camera</h3>
+                <button class="close" onclick="closeModal('add-camera-modal')">&times;</button>
+            </div>
+            <form id="add-camera-form">
+                <div class="form-group">
+                    <label>Camera Name</label>
+                    <input type="text" id="camera-name" placeholder="e.g., Front Entrance" required>
+                </div>
+                <div class="form-group">
+                    <label>Source</label>
+                    <select id="camera-source">
+                        <option value="rtsp">RTSP Stream</option>
+                        <option value="file">Video File</option>
+                        <option value="usb">USB Camera</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>URL / Path</label>
+                    <input type="text" id="camera-url" placeholder="rtsp://user:pass@192.168.1.100:554/stream" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="camera-location" placeholder="e.g., Building A">
+                </div>
+                <button type="submit" class="btn btn-primary btn-full">Add Camera</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Upgrade Modal -->
+    <div class="modal" id="upgrade-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🔓 Pro Feature</h3>
+                <button class="close" onclick="closeModal('upgrade-modal')">&times;</button>
+            </div>
+            <div class="upgrade-body">
+                <p>This feature is available in <strong>Rasd Pro</strong>.</p>
+                <p>Get queue analytics, dwell time, multi-camera, alerts, and custom AI models.</p>
+                <a href="https://rasdai.com" target="_blank" class="btn btn-primary btn-full">Learn More →</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

@@ -5,7 +5,9 @@ import cv2
 
 logger = logging.getLogger(__name__)
 
-CASCADE_PATH = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
+CASCADE_PATH = os.path.join(os.path.dirname(__file__), "haarcascade_frontalface_default.xml")
+if not os.path.exists(CASCADE_PATH):
+    CASCADE_PATH = cv2.data.haarcascades + "haarcascade_frontalface_default.xml"
 
 
 class FaceDetector:
@@ -14,15 +16,18 @@ class FaceDetector:
 
     def load_model(self):
         if not os.path.exists(CASCADE_PATH):
-            raise RuntimeError(f"Haar cascade not found: {CASCADE_PATH}")
-        self.cascade = cv2.CascadeClassifier(CASCADE_PATH)
-        logger.info("Face detector loaded")
+            logger.warning("Haar cascade not found: %s — face detection disabled", CASCADE_PATH)
+            return
+        try:
+            self.cascade = cv2.CascadeClassifier(CASCADE_PATH)
+            logger.info("Face detector loaded")
+        except AttributeError:
+            logger.warning("OpenCV %s missing CascadeClassifier — face detection disabled", cv2.__version__)
 
     def detect(self, frame):
         if self.cascade is None:
-            raise RuntimeError("Face detector not loaded")
+            return []
         h, w = frame.shape[:2]
-        # Downsample 2x for ~4x faster detection; minimum 320px wide
         scale = min(1.0, 640.0 / w)
         if scale < 1.0:
             small = cv2.resize(frame, (0, 0), fx=scale, fy=scale, interpolation=cv2.INTER_LINEAR)

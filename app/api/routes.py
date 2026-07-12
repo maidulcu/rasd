@@ -178,3 +178,45 @@ def serve_output(filename: str):
 @router.get("/health")
 def health():
     return {"status": "ok"}
+
+
+cameras_db = []
+
+
+@router.get("/api/cameras")
+def list_cameras():
+    return {"cameras": cameras_db, "total": len(cameras_db)}
+
+
+@router.post("/api/cameras")
+def add_camera(request: dict):
+    import uuid
+    camera = {
+        "id": uuid.uuid4().hex[:12],
+        "name": request.get("name", "Camera"),
+        "source": request.get("source", "rtsp"),
+        "url": request.get("url", ""),
+        "location": request.get("location", ""),
+        "status": "pending",
+        "people_count": 0,
+    }
+    cameras_db.append(camera)
+    return camera
+
+
+@router.delete("/api/cameras/{camera_id}")
+def delete_camera(camera_id: str):
+    global cameras_db
+    cameras_db = [c for c in cameras_db if c["id"] != camera_id]
+    return {"status": "deleted"}
+
+
+@router.get("/api/stats")
+def get_stats():
+    return {
+        "total_cameras": len(cameras_db),
+        "online_cameras": len([c for c in cameras_db if c["status"] == "online"]),
+        "total_people": sum(c.get("people_count", 0) for c in cameras_db),
+        "total_objects": 0,
+        "fps": 0,
+    }
