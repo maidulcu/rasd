@@ -1,51 +1,4 @@
 let cameras = [];
-let ws = null;
-let selectedCamera = null;
-
-function connectWebSocket() {
-    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-    ws = new WebSocket(`${protocol}//${location.host}/ws`);
-    
-    ws.onopen = () => {
-        document.getElementById('connection-status').className = 'status online';
-        document.getElementById('connection-status').textContent = '● Connected';
-    };
-    
-    ws.onclose = () => {
-        document.getElementById('connection-status').className = 'status offline';
-        document.getElementById('connection-status').textContent = '● Disconnected';
-        setTimeout(connectWebSocket, 3000);
-    };
-    
-    ws.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        if (data.camera_id) {
-            const canvas = document.getElementById(`canvas-${data.camera_id}`);
-            if (canvas) {
-                const ctx = canvas.getContext('2d');
-                const img = new Image();
-                img.onload = () => {
-                    canvas.width = img.width;
-                    canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-                    
-                    if (data.detections) {
-                        data.detections.forEach(det => {
-                            const [x1, y1, x2, y2] = det.box;
-                            ctx.strokeStyle = '#00ff00';
-                            ctx.lineWidth = 2;
-                            ctx.strokeRect(x1, y1, x2-x1, y2-y1);
-                            ctx.fillStyle = '#00ff00';
-                            ctx.font = '12px Arial';
-                            ctx.fillText(det.label, x1, y1 - 5);
-                        });
-                    }
-                };
-                img.src = `data:image/jpeg;base64,${data.frame}`;
-            }
-        }
-    };
-}
 
 async function loadCameras() {
     const res = await fetch('/api/cameras');
@@ -57,13 +10,13 @@ async function loadCameras() {
 function renderCameras() {
     const grid = document.getElementById('camera-grid');
     grid.innerHTML = cameras.length === 0 ? '<div class="no-cameras">No cameras added yet</div>' : '';
-    
+
     cameras.forEach(cam => {
         const card = document.createElement('div');
         card.className = 'camera-card';
         card.innerHTML = `
             <div class="camera-preview">
-                <canvas id="canvas-${cam.id}" width="320" height="240"></canvas>
+                <div class="camera-placeholder">📹 ${cam.source.toUpperCase()}</div>
                 <div class="camera-status">${cam.status}</div>
             </div>
             <div class="camera-info">
@@ -125,6 +78,8 @@ async function loadStats() {
     document.getElementById('fps-display').textContent = data.fps;
 }
 
-connectWebSocket();
+document.getElementById('connection-status').className = 'status online';
+document.getElementById('connection-status').textContent = '● Basic Mode';
+
 loadCameras();
 setInterval(loadStats, 5000);
