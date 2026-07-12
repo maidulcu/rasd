@@ -2,7 +2,7 @@
 
 <div align="center">
 
-**AI-powered CCTV & surveillance video analysis for smart cities and retail security.**
+**AI-powered CCTV & surveillance video analysis for smart cities, retail security, and public safety.**
 
 [![Python](https://img.shields.io/badge/Python-3.12+-blue)](https://www.python.org/)
 [![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-green)](https://ultralytics.com/)
@@ -17,7 +17,28 @@
 
 ## What is Rasd?
 
-**Rasd** (رصد — Arabic for "surveillance") is an open-source AI video intelligence platform. Analyze CCTV and surveillance footage in real-time with YOLOv8.
+**Rasd** (رصد — Arabic for "surveillance") is an open-source AI video intelligence platform that analyzes CCTV and surveillance footage in real-time. Built for **smart cities, retail security, and public safety** in the Gulf region and beyond.
+
+Rasd uses **YOLOv8** for real-time object detection, tracking, and behavior analysis. It can detect people, faces, and objects, track unique individuals across frames, and identify suspicious behavior like theft, concealment, and loitering.
+
+### Key Features
+
+- **Person Detection & Counting** — Track unique people across video frames with YOLOv8 + ByteTrack
+- **Object Classification** — Detect 80 COCO classes: bags, phones, laptops, weapons, and more
+- **Theft Detection** — Unattended object alerts and concealment detection for retail security
+- **Pose Estimation** — Detect suspicious behavior: hand-in-pocket, bending, and unusual poses
+- **Face Detection** — Real-time face counting and recognition hooks
+- **Zone Monitoring** — Entry/exit zones, shelf engagement, line crossing counts
+- **Edge Deployment** — Optimized for Orange Pi 5, Jetson Orin Nano, Raspberry Pi
+- **ONNX Export** — Export trained models to ONNX for production deployment
+
+### Use Cases
+
+- **Retail Security** — Prevent shoplifting, monitor customer flow, analyze dwell time
+- **Smart Cities** — Traffic monitoring, pedestrian counting, public safety
+- **Public Safety** — Suspicious behavior detection, unattended luggage alerts
+- **Building Security** — Access control, intrusion detection, face recognition
+- **Analytics** — Customer behavior, zone occupancy, traffic patterns
 
 ---
 
@@ -69,6 +90,69 @@ Open **http://localhost:8000** — upload a video or paste a URL.
 
 ---
 
+## Architecture
+
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│  Video In   │────▶│  YOLOv8n     │────▶│  ByteTrack  │
+│  (RTSP/MP4) │     │  Detection   │     │  Tracking   │
+└─────────────┘     └──────────────┘     └──────┬──────┘
+                                                │
+                    ┌──────────────┐     ┌──────▼──────┐
+                    │  Pose Est.   │◀────│  Person     │
+                    │  (Actions)   │     │  Re-ID      │
+                    └──────────────┘     └──────┬──────┘
+                                                │
+                    ┌──────────────┐     ┌──────▼──────┐
+                    │  Face Det.   │◀────│  Theft      │
+                    │  (Haar)      │     │  Detection  │
+                    └──────────────┘     └──────┬──────┘
+                                                │
+                    ┌──────────────┐     ┌──────▼──────┐
+                    │  Zone Counter│◀────│  Supervision│
+                    │  (Entry/Exit)│     │  Library    │
+                    └──────────────┘     └──────┬──────┘
+                                                │
+                                        ┌──────▼──────┐
+                                        │  Results    │
+                                        │  (JSON/DB)  │
+                                        └─────────────┘
+```
+
+---
+
+## Project Structure
+
+```
+rasd/
+├── app/
+│   ├── api/routes.py              # FastAPI endpoints
+│   ├── core/config.py             # Settings (pydantic-settings)
+│   ├── core/database.py           # SQLAlchemy engine
+│   ├── detectors/
+│   │   ├── yolo_detector.py       # YOLOv8 object detection
+│   │   ├── pose_detector.py       # YOLOv8-pose behavior analysis
+│   │   └── face_detector.py       # Haar cascade face detection
+│   │   └── theft_detector.py      # Rule-based theft detection
+│   ├── zones/
+│   │   └── zone_counter.py        # Entry/exit/shelf zone counting
+│   ├── storage/models.py          # SQLAlchemy models
+│   ├── video/
+│   │   ├── downloader.py          # Video download service
+│   │   └── video_processor.py     # Processing pipeline
+│   ├── dashboard/                 # Web dashboard
+│   ├── templates/                 # Jinja2 HTML templates
+│   └── main.py                    # App entry point
+├── training/
+│   ├── train.py                   # Fine-tuning pipeline
+│   ├── generate_data.py           # Synthetic data generation
+│   └── config.yaml                # Training configuration
+├── requirements.txt
+└── .env.example
+```
+
+---
+
 ## Custom Training
 
 Fine-tune for your use case:
@@ -82,6 +166,8 @@ python training/train.py --export onnx
 
 ## Edge Deployment
 
+Optimized for low-power edge devices:
+
 | Device | FPS | Power | Use Case |
 |--------|-----|-------|----------|
 | Orange Pi 5 | 8-12 | 5W | Retail stores |
@@ -90,9 +176,27 @@ python training/train.py --export onnx
 
 ---
 
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `FRAME_SKIP` | `2` | Process every Nth frame |
+| `MAX_WIDTH` | `1280` | Downscale frames wider than this |
+| `DATABASE_URL` | `sqlite:///./rasd.db` | Database connection |
+| `YOLO_MODEL` | `yolov8n.pt` | YOLO detection model |
+| `POSE_MODEL` | `yolov8n-pose.pt` | YOLO pose model |
+
+---
+
 ## Contributing
 
 Contributions welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+1. Fork the repo
+2. Create feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing`)
+5. Open Pull Request
 
 ---
 
