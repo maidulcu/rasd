@@ -49,6 +49,11 @@ def upgrade() -> None:
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("job_id", sa.Integer(), nullable=False),
         sa.Column("human_count", sa.Integer(), server_default="0", nullable=True),
+        sa.Column("face_count", sa.Integer(), server_default="0", nullable=True),
+        sa.Column("unattended_count", sa.Integer(), server_default="0", nullable=True),
+        sa.Column("theft_alert_count", sa.Integer(), server_default="0", nullable=True),
+        sa.Column("hand_to_pocket_count", sa.Integer(), server_default="0", nullable=True),
+        sa.Column("bending_count", sa.Integer(), server_default="0", nullable=True),
         sa.ForeignKeyConstraint(["job_id"], ["analysis_jobs.id"]),
         sa.PrimaryKeyConstraint("id"),
     )

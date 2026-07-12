@@ -41,6 +41,7 @@ models/
 
 # Training artifacts
 training/data/
+training/real_data/
 training/config.yaml
 runs/
 
@@ -52,3 +53,7 @@ alembic/versions/*.pyc
 
 # Pytest
 .pytest_cache/
+
+# Private business docs
+docs/PRODUCT_VIABILITY.md
+development_roadmap.md
