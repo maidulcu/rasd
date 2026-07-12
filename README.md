@@ -21,23 +21,33 @@
 
 Rasd uses **YOLOv8** for real-time object detection, tracking, and behavior analysis. It can detect people, faces, and objects, track unique individuals across frames, and identify suspicious behavior like theft, concealment, and loitering.
 
+### Why Rasd?
+
+Unlike generic video analytics tools, Rasd is built for **retail security** first:
+
+- **Theft Detection** — Unattended objects and concealment alerts (free)
+- **Zone Counting** — Entry/exit zones, shelf engagement, line crossing (free)
+- **Behavior Analysis** — Hand-in-pocket, bending detection via pose estimation (free)
+- **Simple Setup** — Just `pip install`, no Docker/Kafka/Redis required
+- **Edge-Ready** — Export to ONNX and run on low-power devices
+- **Gulf-Focused** — Arabic naming, UAE retail classes
+
 ### Key Features
 
 - **Person Detection & Counting** — Track unique people across video frames with YOLOv8 + ByteTrack
 - **Object Classification** — Detect 80 COCO classes: bags, phones, laptops, weapons, and more
-- **Theft Detection** — Unattended object alerts and concealment detection for retail security
-- **Pose Estimation** — Detect suspicious behavior: hand-in-pocket, bending, and unusual poses
-- **Face Detection** — Real-time face counting and recognition hooks
+- **Theft Detection** — Unattended object alerts and concealment detection
+- **Pose Estimation** — Detect suspicious behavior: hand-in-pocket, bending
+- **Face Detection** — Real-time face counting
 - **Zone Monitoring** — Entry/exit zones, shelf engagement, line crossing counts
-- **Edge Deployment** — Optimized for Orange Pi 5, Jetson Orin Nano, Raspberry Pi
-- **ONNX Export** — Export trained models to ONNX for production deployment
+- **Edge Deployment** — Optimized for low-power devices via ONNX
 
 ### Use Cases
 
 - **Retail Security** — Prevent shoplifting, monitor customer flow, analyze dwell time
 - **Smart Cities** — Traffic monitoring, pedestrian counting, public safety
 - **Public Safety** — Suspicious behavior detection, unattended luggage alerts
-- **Building Security** — Access control, intrusion detection, face recognition
+- **Building Security** — Access control, intrusion detection
 - **Analytics** — Customer behavior, zone occupancy, traffic patterns
 
 ---
