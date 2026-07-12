@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Results - Video Analyzer Starter{% endblock %}
+{% block title %}Results — Rasd{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center mt-4">
@@ -9,10 +9,10 @@
 
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title">Video Details</h5>
+                <h5 class="card-title">Detection Summary</h5>
                 <table class="table table-bordered mb-0">
                     <tr>
-                        <th style="width: 35%">Source URL</th>
+                        <th style="width: 35%">Source</th>
                         <td><a href="{{ video_url }}" target="_blank">{{ video_url }}</a></td>
                     </tr>
                     <tr>
@@ -61,7 +61,10 @@
             </div>
         </div>
 
-        <a href="/" class="btn btn-outline-secondary">Analyze Another Video</a>
+        <div class="d-flex gap-2">
+            <a href="/" class="btn btn-outline-secondary">Analyze Another</a>
+            <a href="/dashboard" class="btn btn-primary">Open Dashboard</a>
+        </div>
     </div>
 </div>
 {% endblock %}

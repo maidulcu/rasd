@@ -1,46 +1,85 @@
 {% extends "base.html" %}
 
-{% block title %}Home - Video Analyzer Starter{% endblock %}
+{% block title %}Rasd — AI Video Analytics{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center mt-5">
-    <div class="col-md-8 text-center">
-        <h1 class="mb-4">Video Analyzer Starter</h1>
-        <p class="lead text-muted mb-4">
-            Upload a video or paste a URL to detect and count humans using YOLO.
-        </p>
+<div class="hero">
+    <h1>🔍 Rasd</h1>
+    <p>AI-powered CCTV & surveillance video analysis. Detect people, objects, and suspicious behavior in real-time.</p>
+    <a href="/dashboard" class="btn btn-primary btn-lg me-2">Open Dashboard</a>
+    <a href="#upload" class="btn btn-outline-light btn-lg">Upload Video</a>
+</div>
 
-        {% if error %}
-        <div class="alert alert-danger" role="alert">
-            <strong>Error:</strong> {{ error }}
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="feature-card">
+            <h3>👥 Person Detection</h3>
+            <p>Count unique people with YOLOv8 tracking across frames</p>
         </div>
-        {% endif %}
-
-        <form method="post" action="/analyze" enctype="multipart/form-data" class="mt-4">
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Upload a video file</label>
-                <input
-                    type="file"
-                    name="video_file"
-                    class="form-control form-control-lg"
-                    accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska"
-                >
-            </div>
-            <div class="text-muted mb-2">— or —</div>
-            <div class="mb-4">
-                <label class="form-label fw-semibold">Paste a video URL</label>
-                <input
-                    type="url"
-                    name="video_url"
-                    class="form-control form-control-lg"
-                    placeholder="https://example.com/video.mp4"
-                >
-            </div>
-            <button type="submit" class="btn btn-primary btn-lg px-5">Analyze</button>
-            <small class="text-muted mt-2 d-block">
-                Supports MP4, MOV, AVI, MKV. Max 500 MB.
-            </small>
-        </form>
     </div>
+    <div class="col-md-3">
+        <div class="feature-card">
+            <h3>🎭 Pose Estimation</h3>
+            <p>Detect hand-to-pocket, bending, and suspicious poses</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="feature-card">
+            <h3>⚠️ Theft Detection</h3>
+            <p>Unattended objects and concealment alerts</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="feature-card">
+            <h3>📦 80 COCO Classes</h3>
+            <p>Bags, phones, laptops, weapons, and more</p>
+        </div>
+    </div>
+</div>
+
+<div id="upload" class="upload-section mb-5">
+    <h2 class="text-center mb-4">Analyze a Video</h2>
+
+    {% if error %}
+    <div class="alert alert-danger" role="alert">
+        <strong>Error:</strong> {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="post" action="/analyze" enctype="multipart/form-data">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Upload a video file</label>
+                    <input
+                        type="file"
+                        name="video_file"
+                        class="form-control form-control-lg"
+                        accept="video/mp4,video/quicktime,video/x-msvideo,video/x-matroska"
+                    >
+                </div>
+                <div class="text-center text-muted mb-3">— or —</div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Paste a video URL</label>
+                    <input
+                        type="url"
+                        name="video_url"
+                        class="form-control form-control-lg"
+                        placeholder="https://example.com/video.mp4"
+                    >
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg px-5">Analyze</button>
+                    <small class="text-muted mt-2 d-block">Supports MP4, MOV, AVI, MKV. Max 500 MB.</small>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="cta-section">
+    <h2>Unlock More with Rasd Pro</h2>
+    <p>Queue analytics, dwell time, multi-camera, alerts, face recognition, and custom AI models.</p>
+    <a href="https://rasdai.com" target="_blank" class="btn btn-primary btn-lg">Get Rasd Pro →</a>
 </div>
 {% endblock %}
