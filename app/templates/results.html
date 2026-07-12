@@ -63,6 +63,10 @@
                         <th>Line Crossings (Out)</th>
                         <td><span class="badge bg-info fs-6">{{ zone_stats.get("exit_line_count", 0) }}</span></td>
                     </tr>
+                    <tr>
+                        <th>Avg Dwell Time</th>
+                        <td><span class="badge bg-primary fs-6">{{ zone_stats.get("avg_dwell_seconds", 0) }}</span> seconds</td>
+                    </tr>
                 </table>
             </div>
         </div>

@@ -13,6 +13,8 @@ class ZoneCounter:
     def __init__(self, frame_width: int, frame_height: int):
         self.frame_width = frame_width
         self.frame_height = frame_height
+        self.dwell_times = {}  # track_id -> entry_time
+        self.zone_dwell = {}  # zone_name -> total_dwell_seconds
 
         self.entry_zone = self._create_entry_zone()
         self.exit_zone = self._create_exit_zone()
@@ -84,7 +86,8 @@ class ZoneCounter:
             [int(w * 0.3), int(h * 0.7)],
         ])
 
-    def update(self, detections: sv.Detections) -> dict:
+    def update(self, detections: sv.Detections, frame_idx: int, fps: float) -> dict:
+        import time
         person_mask = detections.class_id == 0
         person_detections = detections[person_mask]
 
@@ -101,6 +104,17 @@ class ZoneCounter:
 
         crossing = self.entry_line.trigger(detections=person_detections)
 
+        current_time = frame_idx / fps
+        for i, tid in enumerate(person_detections.tracker_id):
+            if tid is None:
+                continue
+            if in_entry[i] or in_shelf[i]:
+                if tid not in self.dwell_times:
+                    self.dwell_times[tid] = current_time
+            elif tid in self.dwell_times:
+                dwell = current_time - self.dwell_times.pop(tid)
+                self.zone_dwell["total"] = self.zone_dwell.get("total", 0) + dwell
+
         return self.get_stats()
 
     def annotate(self, frame: np.ndarray, detections: sv.Detections) -> np.ndarray:
@@ -116,10 +130,15 @@ class ZoneCounter:
         return frame
 
     def get_stats(self) -> dict:
+        avg_dwell = 0
+        if self.entry_line.in_count > 0:
+            avg_dwell = self.zone_dwell.get("total", 0) / self.entry_line.in_count
         return {
             "entry_zone_count": self.entry_count,
             "exit_zone_count": self.exit_count,
             "shelf_zone_count": self.shelf_count,
             "entry_line_count": self.entry_line.in_count,
             "exit_line_count": self.entry_line.out_count,
+            "avg_dwell_seconds": round(avg_dwell, 1),
+            "total_dwell_seconds": round(self.zone_dwell.get("total", 0), 1),
         }

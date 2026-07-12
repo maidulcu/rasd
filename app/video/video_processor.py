@@ -26,6 +26,11 @@ class VideoProcessor:
 
         self.box_annotator = sv.BoxAnnotator(thickness=2)
         self.label_annotator = sv.LabelAnnotator(text_thickness=1, text_scale=0.5)
+        self.heatmap_annotator = sv.HeatMapAnnotator(
+            position=sv.Position.BOTTOM_CENTER,
+            opacity=0.5,
+            radius=40,
+        )
         self.tracker = sv.ByteTrack()
         self.zone_counter = None
 
@@ -111,6 +116,9 @@ class VideoProcessor:
                 frame = self.box_annotator.annotate(scene=frame, detections=detections)
                 frame = self.label_annotator.annotate(scene=frame, detections=detections, labels=labels)
 
+                if len(detections) > 0:
+                    frame = self.heatmap_annotator.annotate(scene=frame, detections=detections)
+
                 for p in pose_persons:
                     for bh in p.get("behaviors", []):
                         if bh["type"] == "hand_to_pocket":
@@ -155,7 +163,7 @@ class VideoProcessor:
 
                 max_concurrent = max(max_concurrent, len(active_ids))
 
-                zone_stats = self.zone_counter.update(detections)
+                zone_stats = self.zone_counter.update(detections, frame_idx, fps)
                 frame = self.zone_counter.annotate(frame, detections)
 
             writer.write(frame)
