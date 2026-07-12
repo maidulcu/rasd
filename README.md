@@ -21,31 +21,6 @@
 
 ---
 
-## Free vs Pro
-
-| Feature | Free (MIT) | Pro ($79/mo) |
-|---------|:----------:|:------------:|
-| Person detection & counting | ✅ | ✅ |
-| Object classification (80 COCO) | ✅ | ✅ |
-| Theft detection (unattended) | ✅ | ✅ |
-| Pose estimation (hand-to-pocket) | ✅ | ✅ |
-| Video file analysis | ✅ | ✅ |
-| Basic dashboard | ✅ | ✅ |
-| RTSP / USB camera support | ✅ | ✅ |
-| Queue analytics | ❌ | ✅ |
-| Dwell time tracking | ❌ | ✅ |
-| Customer flow & heatmaps | ❌ | ✅ |
-| Multi-camera management | ❌ | ✅ |
-| Alerts (Telegram, Email, SMS) | ❌ | ✅ |
-| Zone management | ❌ | ✅ |
-| Face recognition | ❌ | ✅ |
-| Custom AI models (UAE retail) | ❌ | ✅ |
-| Priority support | ❌ | ✅ |
-
-**[Get Rasd Pro →](https://rasdai.com)**
-
----
-
 ## Quick Start
 
 ### Prerequisites
@@ -133,6 +108,5 @@ Built by **[Dynamic Web Lab](https://dynamicweblab.com)**
 
 <p align="center">
   <a href="https://dynamicweblab.com">Website</a> ·
-  <a href="https://github.com/maidulcu/rasd">GitHub</a> ·
-  <a href="https://rasdai.com">Get Pro</a>
+  <a href="https://github.com/maidulcu/rasd">GitHub</a>
 </p>
