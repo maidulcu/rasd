@@ -39,13 +39,7 @@ models/
 *.log
 /tmp/
 
-# Training artifacts
-training/data/
-training/real_data/
-training/config.yaml
 runs/
-
-# YOLO training cache
 *.cache
 
 # Alembic

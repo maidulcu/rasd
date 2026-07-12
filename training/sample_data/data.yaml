@@ -1,9 +1,0 @@
-# Rasd Sample Training Dataset
-# 50 images for testing the training pipeline
-
-path: training/sample_data
-train: images
-val: images
-
-nc: 7
-names: ["dallah", "perfume_bottle", "gold_box", "electronics", "dates_box", "wallet", "watch"]
