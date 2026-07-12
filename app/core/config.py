@@ -24,7 +24,7 @@ class Settings(BaseSettings):
             return self.POSE_MODEL.replace(".pt", ".onnx")
         return self.POSE_MODEL
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 settings = Settings()

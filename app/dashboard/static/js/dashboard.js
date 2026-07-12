@@ -1,34 +1,59 @@
-document.getElementById('upload-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const form = e.target;
-    const fileInput = form.querySelector('input[name="video_file"]');
-    const urlInput = form.querySelector('input[name="video_url"]');
-
-    if ((!fileInput.files || fileInput.files.length === 0) && !urlInput.value.trim()) {
-        alert('Please select a video file or enter a video URL.');
-        return;
-    }
-
-    const formData = new FormData(form);
-    const btn = form.querySelector('button[type="submit"]');
-    btn.textContent = 'Analyzing...';
-    btn.disabled = true;
-
-    try {
-        const res = await fetch('/analyze', { method: 'POST', body: formData });
-        if (res.redirected) {
-            window.location.href = res.url;
-        } else {
-            const text = await res.text();
-            const match = text.match(/Error:<\/strong>\s*([^<]+)/);
-            alert(match ? match[1] : 'Analysis failed. Try again.');
-        }
-    } catch (err) {
-        alert('Error: ' + err.message);
-    }
-    btn.textContent = 'Analyze';
-    btn.disabled = false;
+document.addEventListener('DOMContentLoaded', () => {
+    setupNavigation();
+    setupUploadForm();
+    loadStats();
+    setInterval(loadStats, 5000);
 });
+
+function setupNavigation() {
+    document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const view = item.dataset.view;
+            if (view === 'pro') return;
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            item.classList.add('active');
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            const target = document.getElementById(`view-${view}`);
+            if (target) target.classList.add('active');
+        });
+    });
+}
+
+function setupUploadForm() {
+    const form = document.getElementById('upload-form');
+    if (!form) return;
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fileInput = form.querySelector('input[name="video_file"]');
+        const urlInput = form.querySelector('input[name="video_url"]');
+
+        if ((!fileInput.files || fileInput.files.length === 0) && !urlInput.value.trim()) {
+            alert('Please select a video file or enter a video URL.');
+            return;
+        }
+
+        const formData = new FormData(form);
+        const btn = form.querySelector('button[type="submit"]');
+        btn.textContent = 'Analyzing...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/analyze', { method: 'POST', body: formData });
+            if (res.redirected) {
+                window.location.href = res.url;
+            } else {
+                const text = await res.text();
+                const match = text.match(/Error:<\/strong>\s*([^<]+)/);
+                alert(match ? match[1] : 'Analysis failed. Try again.');
+            }
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+        btn.textContent = 'Analyze';
+        btn.disabled = false;
+    });
+}
 
 async function loadStats() {
     try {

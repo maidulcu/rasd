@@ -3,7 +3,7 @@ import logging
 import cv2
 from ultralytics import YOLO
 
-from app.core.config import settings
+from rasd.app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
