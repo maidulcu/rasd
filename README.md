@@ -208,11 +208,23 @@ MIT License — see [LICENSE](LICENSE).
 
 ---
 
-## Credits
+## Contributors
 
-Built by **[Dynamic Web Lab](https://dynamicweblab.com)**
+- **[Maidul Islam](https://github.com/maidulcu)** — Lead Developer
+- **[Dynamic Web Lab](https://github.com/Dynamic-Web-Lab)** — Organization & Enterprise Support
+- **[Dev](https://github.com/maidul-devops)** — Infrastructure & DevOps
+- **[Sakib](https://github.com/7sakib)** — Testing & QA
+
+---
+
+## License
+
+MIT License — see [LICENSE](LICENSE).
+
+---
 
 <p align="center">
+  Built by <a href="https://github.com/Dynamic-Web-Lab">Dynamic Web Lab</a> ·
   <a href="https://dynamicweblab.com">Website</a> ·
   <a href="https://github.com/maidulcu/rasd">GitHub</a>
 </p>
